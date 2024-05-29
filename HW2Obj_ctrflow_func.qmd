@@ -1,0 +1,255 @@
+---
+title: "ST558 HW2: Objects, Control Flow and Functions"
+format: html
+editor: visual
+---
+
+### Document Details
+
+#### Author: *Smit Miyani*
+
+#### Collaborators: *N/A*
+
+#### Assignment: *HW2*
+
+#### Date: *26MAY24*
+
+#### Purpose
+
+*General practice in working with vector, lists, dataframes, functions and control flow.*\
+
+\
+
+### Tasks
+
+#### Task 1: Basic Vector Practice
+
+Assigning the pre treatment observations to `pre_trt` and post treatment observations to `post_trt` using `c()`.
+
+```{r}
+pre_trt <- c(130, 128, 116, 124, 133, 134, 118, 126, 114, 127, 141, 138, 128, 140, 137, 131, 120, 128, 139, 135)
+post_trt <- c(114, 98, 113, 99, 107, 116, 113, 111, 119, 117, 101, 119, 130, 122, 106, 106, 124, 102, 117, 113)
+
+#Structure of the assigned vector "pre_trt"
+str(pre_trt)
+```
+
+Based on the structure of the assigned vectors, creating the name vector `subj_names` using sequential character string `paste()` function. Then assigning the `subj_names` as names of `pre_trt` and `post_trt` .
+
+```{r}
+subj_names <- paste("Subject", 1:20, sep = "_")
+names(pre_trt) <- subj_names
+names(post_trt) <- subj_names
+head(pre_trt)
+```
+
+Determining the change in blood pressure by element-wise subtraction of `post_trt` from `pre_trt` and assigning it to `delta_trt` .
+
+```{r}
+delta_trt <- pre_trt - post_trt
+head(delta_trt)
+```
+
+Determining the mean decrease in blood pressure by averaging of `delta_tr` using `mean()` .
+
+```{r}
+mean(delta_trt)
+```
+
+Sub-setting the `delta_trt` with positive observations only
+
+```{r}
+delta_trt[delta_trt>0]
+```
+
+Determining the mean decrease in blood pressure for patrient that had a decreae by:
+
+1.  Sub-setting the `delta_trt` to return observations greater than 0.
+
+2.  Returning the mean of sub-setted observation using `mean()` .
+
+```{r}
+mean(delta_trt[delta_trt>0])
+```
+
+#### Task 2: Basic Dataframe Practice
+
+Renaming vector as outlined in task and creating a dataframe `bp_df` using `data.frame()` .
+
+```{r}
+patient <- subj_names
+pre_bp <- pre_trt
+post_bp <- post_trt
+diff_bp <- delta_trt
+
+bp_df <- data.frame(patient,pre_bp,post_bp,diff_bp, row.names = NULL)
+head(bp_df)
+```
+
+Returning rows of `bp_df` with negative `diff_bp` observations using `df[df$column < 0,]` .
+
+```{r}
+bp_df[bp_df$diff_bp < 0,]
+```
+
+Create a new column using df\$new_column with a logical set to
+
+```{r}
+bp_df$low_bp <- bp_df$post_bp < 120
+head(bp_df)
+```
+
+Plotting the object `y` with function `plot()` . Using the `echo: false` option to ensure only output is displayed when rendered.
+
+```{r}
+
+knitr::kable(bp_df)
+```
+
+#### Task 3: List Practice
+
+Assigning pre-treatment and post-treatment observations to list `pre_pb` and `post_pb` lists.
+
+```{r}
+patient_pb = subj_names[1:10]
+pre_pb <- c(138, 135, 147, 117, 152, 134, 114, 121, 131, 130)
+post_pb <- c(105, 136, 123, 130, 134, 143, 135, 139, 120, 124)
+diff_pb <- pre_pb - post_pb
+```
+
+Creating a dataframe `pb_df` (similar to Task 2) with new placebo treatment data.
+
+```{r}
+pb_df <- data.frame(patient_pb,pre_pb,post_pb, diff_pb)
+
+#Renaming the columns to match bp_df
+colnames(pb_df) <- c("patient","pre_bp","post_bp", "diff_bp")
+pb_df$low_bp <- pb_df$post_bp < 120
+head(pb_df)
+```
+
+Creating a list `experiment` with `pb_df` and `bp_df` contained as elements, and renamed as `placebo` and `treatment`.
+
+```{r}
+experiment = list("placebo" = pb_df,"treatment" = bp_df)
+```
+
+Calling the first element of `experiment` using different ways:
+
+```{r}
+experiment[1]
+```
+
+```{r}
+experiment$placebo
+```
+
+```{r}
+experiment["placebo"]
+```
+
+Accessing `pre_bp` column from the `experiment` 's first element `placebo` .
+
+```{r}
+experiment$placebo$pre_bp
+```
+
+#### Task 4: Control Flow Practice
+
+Creating the status column in the `placebo` and `tretament` df in the `experiment` list.
+
+```{r}
+experiment$placebo$status <- character(10)
+experiment$treatment$status <- character(20)
+experiment$placebo$status #Preview
+```
+
+Writing the values for `status` column in `treatment` by applying "if/else if/else" logic on `experiment$treatment$post_bp` observations and iterating over each element of `experiment$treatment$status` using "for" loop with column index.
+
+```{r}
+for(i in seq(1:length(experiment$treatment$status))){
+  if (experiment$treatment$post_bp[i] <= 120) {
+  experiment$treatment$status[i] = "optimal"  
+} else if (experiment$treatment$post_bp[i] > 120 & experiment$treatment$post_bp[i] <= 130) {
+  experiment$treatment$status[i] = "borderline"
+} else if (experiment$treatment$post_bp[i] > 130) {
+  experiment$treatment$status[i] = "high"
+} else {
+  #if no conditions met
+  experiment$treatment$status[i] = "ERROR"
+}
+}
+head(experiment$treatment)
+```
+
+Similarly writing values for status in `experiment$treatment$` .
+
+```{r}
+for(i in seq(1:length(experiment$placebo$status))){
+  if (experiment$placebo$post_bp[i] <= 120) {
+  experiment$placebo$status[i] = "optimal"  
+} else if (experiment$placebo$post_bp[i] > 120 & experiment$placebo$post_bp[i] <= 130) {
+  experiment$placebo$status[i] = "borderline"
+} else if (experiment$placebo$post_bp[i] > 130) {
+  experiment$placebo$status[i] = "high"
+} else {
+  #if no conditions met
+  experiment$placebo$status[i] = "ERROR"
+}
+}
+head(experiment$placebo)
+```
+
+#### Task 5: Writing Functions
+
+Creating a function `statasizer` which takes in a list of two dataframes and a statistic function (as a string), and returns attributed vector of corresponding statistic.
+
+```{r}
+statasizer <- function(df_list,func = "mean") {
+  #Create a str for func to be added in name vector
+  func_str <- toString(func)
+  
+  #assigning stat function to input string
+  func <- get(func)
+  numeric_cols <- c("pre_bp", "post_bp", "diff_bp")
+  
+  stats_vec <-c() #empty statistic vector
+  #Iterating df_list
+  for (df in df_list){
+    
+    #iterating over numeric column in the df_list
+    for (x in seq(1:length(numeric_cols))) {
+      
+      #applying the input statistic function and appending it to empty statistic vector
+      stats_vec <- append(stats_vec,func(df[,numeric_cols[x]]))
+    }
+  }
+  #Creating a name vector by vectorizing and using paste() multiple times
+  
+  name_vec <- paste(c(paste(numeric_cols,"placebo",sep = "_"),paste(numeric_cols,"treatment",sep = "_")),func_str,sep = "_")
+  
+  #assigning name vector to statistic vector
+  names(stats_vec) <- name_vec
+  
+  return(stats_vec)
+  #code
+  #return something with return()
+  #or returns last value
+}
+```
+
+Applying the function to `experiment` with:
+
+1.  No input function
+
+    ```{r}
+    statasizer(experiment)
+    ```
+
+2.  With "var", "sd", "min", and "max"
+
+    ```{r}
+    for(fn in c("var", "sd", "min","max")){
+      print(statasizer(experiment,fn))
+    }
+    ```
